@@ -25,3 +25,24 @@ func (server *UDPServer) Init() {
 	}
 	server.socket = sock
 }
+
+func (server *UDPServer) onDataReceive(dataReceived []byte, receivedFrom *net.UDPAddr) {
+	_, err := server.socket.WriteToUDP([]byte("Test response"), receivedFrom)
+	if err != nil {
+		fmt.Print("Error while responding: %v", err)
+	}
+}
+
+func (server *UDPServer) Serve() {
+	var p [1024]byte
+	for {
+		n, remoteAddress, err := server.socket.ReadFromUDP(p[:])
+		if err != nil {
+			fmt.Printf("Error receiving data  %v", err)
+			continue
+		}
+		fmt.Printf("Received data from %v with length %d\n", remoteAddress, n)
+
+		go server.onDataReceive(p[:n], remoteAddress)
+	}
+}
