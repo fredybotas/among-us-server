@@ -1,6 +1,7 @@
 package cont
 
 import (
+	"fmt"
 	"sync"
 	"time"
 )
@@ -12,9 +13,11 @@ type Container struct {
 	writeLock sync.RWMutex
 }
 
-func (container *Container) Init() {
-	container.entries = make(map[string]*RoomEntry)
-	go container.periodicClean()
+func NewContainer() *Container {
+	var cont Container
+	cont.entries = make(map[string]*RoomEntry)
+	go cont.periodicClean()
+	return &cont
 }
 
 func (container *Container) periodicClean() {
@@ -33,13 +36,14 @@ func (container *Container) periodicClean() {
 
 		for _, key := range keysToDelete {
 			delete(container.entries, key)
+			fmt.Printf("Removing room: %s due to inactivity\n", key)
 		}
 
 		container.writeLock.Unlock()
 	}
 }
 
-func (container *Container) InsertEntry(entry RoomEntry) bool {
+func (container *Container) InsertEntry(entry *RoomEntry) bool {
 	container.writeLock.Lock()
 	defer container.writeLock.Unlock()
 
@@ -49,7 +53,7 @@ func (container *Container) InsertEntry(entry RoomEntry) bool {
 		return false
 	}
 	entry.isActive = true
-	container.entries[entry.code] = &entry
+	container.entries[entry.code] = entry
 
 	return true
 }

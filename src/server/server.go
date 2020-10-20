@@ -8,11 +8,11 @@ import (
 const port int = 1221
 const ip string = "127.0.0.1"
 
-type UDPServer struct {
+type Server struct {
 	socket *net.UDPConn
 }
 
-func (server *UDPServer) Init() {
+func (server *Server) Init() {
 	addr := net.UDPAddr{
 		Port: port,
 		IP:   net.ParseIP(ip),
@@ -23,17 +23,18 @@ func (server *UDPServer) Init() {
 		fmt.Printf("Error binding sock %v\n", err)
 		return
 	}
+
 	server.socket = sock
 }
 
-func (server *UDPServer) onDataReceive(dataReceived []byte, receivedFrom *net.UDPAddr) {
+func (server *Server) onDataReceive(dataReceived []byte, receivedFrom *net.UDPAddr) {
 	_, err := server.socket.WriteToUDP([]byte("Test response"), receivedFrom)
 	if err != nil {
 		fmt.Printf("Error while responding: %v\n", err)
 	}
 }
 
-func (server *UDPServer) Serve() {
+func (server *Server) Serve() {
 	fmt.Println("Server waiting for data...")
 	var p [1024]byte
 	for {

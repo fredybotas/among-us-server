@@ -7,12 +7,6 @@ import (
 	"time"
 )
 
-func initContainer() *cont.Container {
-	var container cont.Container
-	container.Init()
-	return &container
-}
-
 var seededRand *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 func StringWithCharset(length int, charset string) string {
@@ -24,7 +18,7 @@ func StringWithCharset(length int, charset string) string {
 }
 
 func TestContainerAdd(t *testing.T) {
-	container := initContainer()
+	container := cont.NewContainer()
 	inserted := container.InsertEntry(cont.NewEntry("aaa", 1, 2))
 	if inserted == false {
 		t.Errorf("Element was not inserted")
@@ -32,7 +26,7 @@ func TestContainerAdd(t *testing.T) {
 }
 
 func TestContainerAddAndFetch(t *testing.T) {
-	container := initContainer()
+	container := cont.NewContainer()
 	container.InsertEntry(cont.NewEntry("aaa", 1, 2))
 	res := container.Query(cont.NewLocation(1, 2), 1)
 	if len(res) != 1 {
@@ -45,7 +39,7 @@ func TestContainerAddAndFetch(t *testing.T) {
 }
 
 func TestContainerAddDuplicate(t *testing.T) {
-	container := initContainer()
+	container := cont.NewContainer()
 	container.InsertEntry(cont.NewEntry("aaa", 1, 2))
 	inserted := container.InsertEntry(cont.NewEntry("aaa", 1, 2))
 	if inserted == true {
@@ -62,7 +56,7 @@ func TestContainerAddDuplicate(t *testing.T) {
 }
 
 func TestContainerAddConcurrently(t *testing.T) {
-	container := initContainer()
+	container := cont.NewContainer()
 
 	for i := 0; i < 1000; i++ {
 		go container.InsertEntry(cont.NewEntry(StringWithCharset(3, "abcdefghijklmnop"), 1, 2))
@@ -74,7 +68,7 @@ func TestContainerAddConcurrently(t *testing.T) {
 }
 
 func TestContainerAddAndReadConcurrently(t *testing.T) {
-	container := initContainer()
+	container := cont.NewContainer()
 
 	for i := 0; i < 100000; i++ {
 		go container.InsertEntry(cont.NewEntry(StringWithCharset(5, "abcdefghijklmnop"), 1, 2))
@@ -87,7 +81,7 @@ func TestContainerAddAndReadConcurrently(t *testing.T) {
 }
 
 func TestRemoveInactiveEntries(t *testing.T) {
-	container := initContainer()
+	container := cont.NewContainer()
 	for i := 0; i < 1000; i++ {
 		go container.InsertEntry(cont.NewEntry(StringWithCharset(5, "abcdefghijklmnop"), 1, 2))
 	}

@@ -5,7 +5,7 @@ import (
 )
 
 func main() {
-	var serv server.UDPServer
+	var serv server.Server
 	serv.Init()
 	serv.Serve()
 }

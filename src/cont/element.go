@@ -6,11 +6,12 @@ type RoomEntry struct {
 	isActive bool
 }
 
-func NewEntry(code string, lat float64, lon float64) RoomEntry {
-	var entry RoomEntry
-	entry.code = code
-	entry.location = NewLocation(lat, lon)
-	return entry
+func NewEntry(code string, lat float64, lon float64) *RoomEntry {
+	return &RoomEntry{
+		code:     code,
+		location: NewLocation(lat, lon),
+		isActive: false,
+	}
 }
 
 func (entry RoomEntry) GetCode() string {
