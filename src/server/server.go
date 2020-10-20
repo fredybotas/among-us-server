@@ -6,6 +6,16 @@ import (
 	"net"
 )
 
+/***
+PROTOCOL
+CLIENT:
+	AUS:ROOM:123345:42.70898:42.322442: // Protocol, Command, Code, Lat, Lon
+	AUS:REFRESH:20:						// Protocol, Command, Proximity
+
+SERVER:
+	AUS:123435:323133:243231:432443:	// Protocol, Room list
+*/
+
 const port int = 1221
 const ip string = "127.0.0.1"
 
