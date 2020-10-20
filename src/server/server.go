@@ -1,6 +1,7 @@
 package server
 
 import (
+	"cont"
 	"fmt"
 	"net"
 )
@@ -9,10 +10,13 @@ const port int = 1221
 const ip string = "127.0.0.1"
 
 type Server struct {
-	socket *net.UDPConn
+	socket    *net.UDPConn
+	container *cont.Container
 }
 
 func (server *Server) Init() {
+	server.container = cont.NewContainer()
+
 	addr := net.UDPAddr{
 		Port: port,
 		IP:   net.ParseIP(ip),
