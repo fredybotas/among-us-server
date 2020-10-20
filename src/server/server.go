@@ -43,7 +43,7 @@ func (server *UDPServer) Serve() {
 			continue
 		}
 		fmt.Printf("Received data from %v with length %d\n", remoteAddress, n)
-
-		go server.onDataReceive(p[:n], remoteAddress)
+		currDataCopy := p
+		go server.onDataReceive(currDataCopy[:], remoteAddress)
 	}
 }
