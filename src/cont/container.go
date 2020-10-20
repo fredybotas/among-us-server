@@ -9,13 +9,13 @@ import (
 const CheckInterval = 5
 
 type Container struct {
-	entries   map[string]*RoomEntry
+	entries   map[string]*Room
 	writeLock sync.RWMutex
 }
 
 func NewContainer() *Container {
 	var cont Container
-	cont.entries = make(map[string]*RoomEntry)
+	cont.entries = make(map[string]*Room)
 	go cont.periodicClean()
 	return &cont
 }
@@ -43,7 +43,7 @@ func (container *Container) periodicClean() {
 	}
 }
 
-func (container *Container) InsertEntry(entry *RoomEntry) bool {
+func (container *Container) InsertEntry(entry *Room) bool {
 	container.writeLock.Lock()
 	defer container.writeLock.Unlock()
 
@@ -58,10 +58,10 @@ func (container *Container) InsertEntry(entry *RoomEntry) bool {
 	return true
 }
 
-func (container *Container) Query(location Location, radius float64) []RoomEntry {
+func (container *Container) Query(location Location, radius float64) []Room {
 	container.writeLock.RLock()
 	defer container.writeLock.RUnlock()
-	result := make([]RoomEntry, 0)
+	result := make([]Room, 0)
 	for _, value := range container.entries {
 		if value.GetLocation().CheckProximity(location, radius) {
 			result = append(result, *value)
