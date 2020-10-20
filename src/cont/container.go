@@ -63,7 +63,7 @@ func (container *Container) Query(location Location, radius float64) []RoomEntry
 	defer container.writeLock.RUnlock()
 	result := make([]RoomEntry, 0)
 	for _, value := range container.entries {
-		if checkProximity(value.GetLocation(), location, radius) {
+		if value.GetLocation().CheckProximity(location, radius) {
 			result = append(result, *value)
 		}
 	}
@@ -74,9 +74,4 @@ func (container *Container) GetCount() int {
 	container.writeLock.RLock()
 	defer container.writeLock.RUnlock()
 	return len(container.entries)
-}
-
-func checkProximity(location1 Location, location2 Location, radius float64) bool {
-	// TODO: Implement correctly
-	return true
 }
