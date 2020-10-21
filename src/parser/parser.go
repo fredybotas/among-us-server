@@ -48,8 +48,9 @@ func ParseRequestPayload(payload []byte) (float64, *cont.Location, error) {
 		math.Float64frombits(binary.BigEndian.Uint64(payload[9:17])),
 		math.Float64frombits(binary.BigEndian.Uint64(payload[18:26])),
 	)
-
-	return math.Float64frombits(binary.BigEndian.Uint64(payload[0:8])),
-		&location,
-		nil
+	proximity := math.Float64frombits(binary.BigEndian.Uint64(payload[0:8]))
+	if proximity < 0 {
+		proximity = 0
+	}
+	return proximity, &location, nil
 }

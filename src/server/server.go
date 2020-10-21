@@ -4,6 +4,7 @@ import (
 	"cont"
 	"fmt"
 	"net"
+	"parser"
 )
 
 const port int = 1221
@@ -32,9 +33,32 @@ func (server *Server) Init() {
 }
 
 func (server *Server) onDataReceive(dataReceived []byte, receivedFrom *net.UDPAddr) {
-	_, err := server.socket.WriteToUDP([]byte("Test response"), receivedFrom)
+	payload, command, err := parser.ValidatePacket(dataReceived)
 	if err != nil {
-		fmt.Printf("Error while responding: %v\n", err)
+		fmt.Printf("Packet received error: %v\n", err)
+		return
+	}
+
+	if command == parser.AddRoom {
+		room, err := parser.ParseRoomPayload(payload)
+		if err != nil {
+			fmt.Printf("Error parsing packet: %v\n", err)
+			return
+		}
+		server.container.InsertEntry(room)
+	} else if command == parser.GetRooms {
+		proximity, loc, err := parser.ParseRequestPayload(payload)
+		if err != nil {
+			fmt.Printf("Error parsing packet: %v\n", err)
+			return
+		}
+		result := server.container.Query(*loc, proximity)
+		_, err1 := server.socket.WriteToUDP(parser.SerializeRoomsToPacket(result), receivedFrom)
+		if err1 != nil {
+			fmt.Printf("Error while responding: %v\n", err)
+		}
+	} else {
+		fmt.Printf("Unknown command received")
 	}
 }
 
