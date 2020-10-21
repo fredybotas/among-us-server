@@ -1,55 +1,82 @@
 package tests
 
 import (
+	"encoding/binary"
+	"math"
 	"parser"
 	"testing"
 )
 
-func TestPacketEmptyPayload(t *testing.T) {
-	payload, _, _ := parser.ValidatePacket([]byte("AUS:ROOM::"))
-	if len(payload) != 0 {
-		t.Errorf("Returned payload should be empty: %v", payload)
+func prepareAddRoomPacket(code string, lat, lon float64) []byte {
+	result := make([]byte, 0)
+	result = append(result, []byte("AUS:ROOM:")...)
+	result = append(result, []byte(code)...)
+	result = append(result, []byte(":")...)
+	var buf1 [8]byte
+	binary.BigEndian.PutUint64(buf1[:], math.Float64bits(lat))
+	result = append(result, buf1[:]...)
+	result = append(result, []byte(":")...)
+	var buf2 [8]byte
+	binary.BigEndian.PutUint64(buf2[:], math.Float64bits(lon))
+	result = append(result, buf2[:]...)
+	result = append(result, []byte(":")...)
+	return result
+}
+
+func prepareGetRoomsPacket(proximity, lat, lon float64) []byte {
+	result := make([]byte, 0)
+	result = append(result, []byte("AUS:REFR:")...)
+	var buf1 [8]byte
+	binary.BigEndian.PutUint64(buf1[:], math.Float64bits(proximity))
+	result = append(result, buf1[:]...)
+	result = append(result, []byte(":")...)
+
+	var buf2 [8]byte
+	binary.BigEndian.PutUint64(buf2[:], math.Float64bits(lat))
+	result = append(result, buf2[:]...)
+	result = append(result, []byte(":")...)
+
+	var buf3 [8]byte
+	binary.BigEndian.PutUint64(buf3[:], math.Float64bits(lon))
+	result = append(result, buf3[:]...)
+	result = append(result, []byte(":")...)
+	return result
+}
+
+func TestPayloadParseGetRooms(t *testing.T) {
+	lat := 1.2
+	lon := 2.5
+	proximity := 10.0
+	packet := prepareGetRoomsPacket(proximity, lat, lon)
+	payload, _, _ := parser.ValidatePacket(packet)
+	prox, location, err := parser.ParseRequestPayload(payload)
+	if err != nil {
+		t.Errorf("failed while parsing")
+		return
+	}
+	if prox != proximity {
+		t.Errorf("failed reading proximity")
+	}
+	if location.GetLat() != lat || location.GetLon() != lon {
+		t.Errorf("failed reading location")
 	}
 }
 
-func TestSmallPacket(t *testing.T) {
-	_, _, err := parser.ValidatePacket([]byte("AUS:ROOM:"))
-	if err == nil {
-		t.Errorf("Small packets should end with error")
+func TestPayloadParseAddRoom(t *testing.T) {
+	lat := 1.2
+	lon := 2.5
+	code := "AAAAAA"
+	packet := prepareAddRoomPacket(code, lat, lon)
+	payload, _, _ := parser.ValidatePacket(packet)
+	room, err := parser.ParseRoomPayload(payload)
+	if err != nil {
+		t.Errorf("failed while parsing")
+		return
 	}
-}
-
-func TestUnknownPacket(t *testing.T) {
-	_, _, err := parser.ValidatePacket([]byte("ASDASDASDSADASDAS"))
-	if err == nil {
-		t.Errorf("Unknown packet should return error")
+	if room.GetCode() != code {
+		t.Errorf("failed reading code")
 	}
-}
-
-func TestGetPayload(t *testing.T) {
-	payload, _, _ := parser.ValidatePacket([]byte("AUS:ROOM:AAAA:"))
-	if string(payload) != "AAAA" {
-		t.Errorf("Wrong payload parsed")
-	}
-}
-
-func TestCommandGetRoom(t *testing.T) {
-	_, command, _ := parser.ValidatePacket([]byte("AUS:REFR::"))
-	if command != parser.GetRooms {
-		t.Errorf("Wrong command parsed")
-	}
-}
-
-func TestCommandAddRoom(t *testing.T) {
-	_, command, _ := parser.ValidatePacket([]byte("AUS:ROOM::"))
-	if command != parser.AddRoom {
-		t.Errorf("Wrong command parsed")
-	}
-}
-
-func TestCommandUnknown(t *testing.T) {
-	_, command, _ := parser.ValidatePacket([]byte("AUS:SSSA::"))
-	if command != parser.Unknown {
-		t.Errorf("Wrong command parsed")
+	if room.GetLocation().GetLat() != lat || room.GetLocation().GetLon() != lon {
+		t.Errorf("failed reading location")
 	}
 }
