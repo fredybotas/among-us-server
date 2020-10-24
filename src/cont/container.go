@@ -50,6 +50,7 @@ func (container *Container) InsertEntry(entry *Room) bool {
 	element, entryExists := container.entries[entry.code]
 	if entryExists {
 		element.isActive = true
+		element.location = entry.location
 		return false
 	}
 	entry.isActive = true

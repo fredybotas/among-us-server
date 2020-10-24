@@ -73,6 +73,6 @@ func (server *Server) Serve() {
 		}
 		fmt.Printf("Received data from %v with length %d\n", remoteAddress, n)
 		currDataCopy := p
-		go server.onDataReceive(currDataCopy[:], remoteAddress)
+		go server.onDataReceive(currDataCopy[:n], remoteAddress)
 	}
 }

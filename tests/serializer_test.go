@@ -16,3 +16,12 @@ func TestSerializeRoomsToPacket(t *testing.T) {
 		return
 	}
 }
+
+func TestSerializeEmptyRoomsToPacket(t *testing.T) {
+	var rooms []cont.Room
+	packet := parser.SerializeRoomsToPacket(rooms)
+	if string(packet) != "AUS::" {
+		t.Errorf("wrong packet created")
+		return
+	}
+}
