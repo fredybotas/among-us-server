@@ -2,11 +2,13 @@ package cont
 
 import (
 	"fmt"
+	"sort"
 	"sync"
 	"time"
 )
 
 const CheckInterval = 5
+const maxServerCount = 5
 
 type Container struct {
 	entries   map[string]*Room
@@ -61,14 +63,19 @@ func (container *Container) InsertEntry(entry *Room) bool {
 
 func (container *Container) Query(location Location, radius float64) []Room {
 	container.writeLock.RLock()
-	defer container.writeLock.RUnlock()
 	result := make([]Room, 0)
 	for _, value := range container.entries {
-		if value.GetLocation().CheckProximity(location, radius) {
-			result = append(result, *value)
-		}
+		result = append(result, *value)
 	}
-	return result
+	container.writeLock.RUnlock()
+	sort.Slice(result, func(i, j int) bool {
+		return location.GetDistance(result[i].GetLocation()) < location.GetDistance(result[j].GetLocation())
+	})
+	resultCount := maxServerCount
+	if len(result) < maxServerCount {
+		resultCount = len(result)
+	}
+	return result[:resultCount]
 }
 
 func (container *Container) GetCount() int {
