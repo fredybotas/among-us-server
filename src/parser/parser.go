@@ -10,28 +10,29 @@ import (
 /***
 PROTOCOL
 CLIENT:
-	AUS:ROOM:123345:42.70898:42.322442: // Protocol, Command, Code, Lat, Lon
-			:  6b  :   8b   :    8b   :
-			:		PAYLOAD			  :
+	AUS:ROOM:123345:CN:42.70898:42.322442: // Protocol, Command, Code, server location, Lat, Lon
+			:  6b  :2b:   8b   :    8b   :
+			:		  PAYLOAD			 :
 	AUS:REFR:20000000:42.70898:42.322442:		// Protocol, Command, Proximity
             :   8b   :   8b   :   8b    :
 SERVER:
-	AUS:123435:323133:243231:432443:	// Protocol, Room list
+	AUS:123435:CN:323133:EU:243231:NA:432443:CN:	// Protocol, Room list
 */
 
 // Parser for AddRoom command
 func ParseRoomPayload(payload []byte) (*cont.Room, error) {
-	if len(payload) != 24 {
+	if len(payload) != 27 {
 		return nil, errors.New("wrong payload received")
 	}
-	if string(payload[6]) != ":" || string(payload[15]) != ":" {
+	if string(payload[6]) != ":" || string(payload[9]) != ":" || string(payload[18]) != ":" {
 		return nil, errors.New("wrong payload received: delimeters not correct")
 	}
 
 	return cont.NewRoom(
 		string(payload[0:6]),
-		math.Float64frombits(binary.BigEndian.Uint64(payload[7:15])),
-		math.Float64frombits(binary.BigEndian.Uint64(payload[16:24])),
+		string(payload[7:9]),
+		math.Float64frombits(binary.BigEndian.Uint64(payload[10:18])),
+		math.Float64frombits(binary.BigEndian.Uint64(payload[19:27])),
 	), nil
 }
 

@@ -7,10 +7,12 @@ import (
 	"testing"
 )
 
-func prepareAddRoomPacket(code string, lat, lon float64) []byte {
+func prepareAddRoomPacket(code string, serverLocation string, lat, lon float64) []byte {
 	result := make([]byte, 0)
 	result = append(result, []byte("AUS:ROOM:")...)
 	result = append(result, []byte(code)...)
+	result = append(result, []byte(":")...)
+	result = append(result, []byte(serverLocation)...)
 	result = append(result, []byte(":")...)
 	var buf1 [8]byte
 	binary.BigEndian.PutUint64(buf1[:], math.Float64bits(lat))
@@ -66,7 +68,8 @@ func TestPayloadParseAddRoom(t *testing.T) {
 	lat := 1.2
 	lon := 2.5
 	code := "AAAAAA"
-	packet := prepareAddRoomPacket(code, lat, lon)
+	serverLocation := "CN"
+	packet := prepareAddRoomPacket(code, serverLocation, lat, lon)
 	payload, _, _ := parser.ValidatePacket(packet)
 	room, err := parser.ParseRoomPayload(payload)
 	if err != nil {
@@ -75,6 +78,9 @@ func TestPayloadParseAddRoom(t *testing.T) {
 	}
 	if room.GetCode() != code {
 		t.Errorf("failed reading code")
+	}
+	if room.GetServerLocation() != serverLocation {
+		t.Errorf("failed reading server location")
 	}
 	if room.GetLocation().GetLat() != lat || room.GetLocation().GetLon() != lon {
 		t.Errorf("failed reading location")

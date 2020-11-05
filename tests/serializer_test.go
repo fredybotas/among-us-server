@@ -8,10 +8,10 @@ import (
 
 func TestSerializeRoomsToPacket(t *testing.T) {
 	var rooms []cont.Room
-	rooms = append(rooms, *cont.NewRoom("AAAAAA", 0, 0))
-	rooms = append(rooms, *cont.NewRoom("BBBBBB", 0, 0))
+	rooms = append(rooms, *cont.NewRoom("AAAAAA", "CN", 0, 0))
+	rooms = append(rooms, *cont.NewRoom("BBBBBB", "EU", 0, 0))
 	packet := parser.SerializeRoomsToPacket(rooms)
-	if string(packet) != "AUS:AAAAAA:BBBBBB:" {
+	if string(packet) != "AUS:AAAAAA:CN:BBBBBB:EU:" {
 		t.Errorf("wrong packet created")
 		return
 	}

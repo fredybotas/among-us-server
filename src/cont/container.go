@@ -52,6 +52,7 @@ func (container *Container) InsertEntry(entry *Room) bool {
 	element, entryExists := container.entries[entry.code]
 	if entryExists {
 		element.isActive = true
+		element.serverLocation = entry.serverLocation
 		element.location = entry.location
 		return false
 	}
