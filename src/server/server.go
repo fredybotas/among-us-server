@@ -33,27 +33,27 @@ func (server *Server) Init() {
 }
 
 func (server *Server) onDataReceive(dataReceived []byte, receivedFrom *net.UDPAddr) {
-	payload, command, err := parser.ValidatePacket(dataReceived)
+	payload, command, ver, err := parser.ValidatePacket(dataReceived)
 	if err != nil {
 		fmt.Printf("Packet received error: %v\n", err)
 		return
 	}
 
 	if command == parser.AddRoom {
-		room, err := parser.ParseRoomPayload(payload)
+		room, err := parser.ParseRoomPayload(payload, ver)
 		if err != nil {
 			fmt.Printf("Error parsing packet: %v\n", err)
 			return
 		}
 		server.container.InsertEntry(room)
 	} else if command == parser.GetRooms {
-		proximity, loc, err := parser.ParseRequestPayload(payload)
+		proximity, loc, err := parser.ParseRequestPayload(payload, ver)
 		if err != nil {
 			fmt.Printf("Error parsing packet: %v\n", err)
 			return
 		}
 		result := server.container.Query(*loc, proximity)
-		_, err1 := server.socket.WriteToUDP(parser.SerializeRoomsToPacket(result), receivedFrom)
+		_, err1 := server.socket.WriteToUDP(parser.SerializeRoomsToPacket(result, ver), receivedFrom)
 		if err1 != nil {
 			fmt.Printf("Error while responding: %v\n", err)
 		}

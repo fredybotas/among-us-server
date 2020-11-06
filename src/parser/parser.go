@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"math"
+	"version"
 )
 
 /***
@@ -19,8 +20,37 @@ SERVER:
 	AUS:123435:CN:323133:EU:243231:NA:432443:CN:	// Protocol, Room list
 */
 
+const ServerLocationDefault = "EU"
+
 // Parser for AddRoom command
-func ParseRoomPayload(payload []byte) (*cont.Room, error) {
+func ParseRoomPayload(payload []byte, ver version.Version) (*cont.Room, error) {
+	switch ver {
+	case version.One:
+		return versionOnePayloadParser(payload)
+	case version.Two:
+		return versionTwoPayloadParser(payload)
+	default:
+		return nil, errors.New("unknown version requested to parse")
+	}
+}
+
+func versionOnePayloadParser(payload []byte) (*cont.Room, error) {
+	if len(payload) != 24 {
+		return nil, errors.New("wrong payload received")
+	}
+	if string(payload[6]) != ":" || string(payload[15]) != ":" {
+		return nil, errors.New("wrong payload received: delimeters not correct")
+	}
+
+	return cont.NewRoom(
+		string(payload[0:6]),
+		ServerLocationDefault,
+		math.Float64frombits(binary.BigEndian.Uint64(payload[7:15])),
+		math.Float64frombits(binary.BigEndian.Uint64(payload[16:24])),
+	), nil
+}
+
+func versionTwoPayloadParser(payload []byte) (*cont.Room, error) {
 	if len(payload) != 27 {
 		return nil, errors.New("wrong payload received")
 	}
@@ -37,7 +67,8 @@ func ParseRoomPayload(payload []byte) (*cont.Room, error) {
 }
 
 // Parser for GetRooms command
-func ParseRequestPayload(payload []byte) (float64, *cont.Location, error) {
+func ParseRequestPayload(payload []byte, ver version.Version) (float64, *cont.Location, error) {
+	// ver not needed for parsing GetRooms request
 	if len(payload) != 26 {
 		return 0, nil, errors.New("wrong payload received")
 	}
